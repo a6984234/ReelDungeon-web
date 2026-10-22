@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>轉輪地城 Reel Dungeon</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #120c10; overflow: hidden;
+      /* 手機上禁止捲動、縮放、長按選取，觸控全部交給遊戲 */
+      touch-action: none; overscroll-behavior: none;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    }
+    #unity-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; background: #120c10; outline: none; }
+    .overlay {
+      position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+      padding: 24px; box-sizing: border-box; text-align: center;
+      color: #f3e9d8; background: #120c10; font: 18px/1.5 system-ui, "Microsoft JhengHei", "PingFang TC", sans-serif;
+    }
+    #bar { width: min(60vw, 320px); height: 10px; border: 1px solid #f3e9d8; border-radius: 6px; overflow: hidden; }
+    #fill { height: 100%; width: 0; background: #d9a84e; transition: width .2s; }
+  </style>
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div id="loading" class="overlay">
+    <div>轉輪地城　載入中…</div>
+    <div id="bar"><div id="fill"></div></div>
+  </div>
+  <script>
+    var buildUrl = "Build";
+    var config = {
+      dataUrl: buildUrl + "/WebGL.data.unityweb",
+      frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+      codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "PanStudio",
+      productName: "轉輪地城",
+      productVersion: "1.0",
+      matchWebGLToCanvasSize: true,
+      // 高解析度手機限制在 2 倍，避免畫面太大拖慢效能
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+    };
+
+    var loading = document.getElementById("loading");
+    var script = document.createElement("script");
+    script.src = buildUrl + "/WebGL.loader.js";
+    script.onload = function () {
+      createUnityInstance(document.getElementById("unity-canvas"), config, function (progress) {
+        document.getElementById("fill").style.width = Math.round(progress * 100) + "%";
+      }).then(function () {
+        loading.remove();
+      }).catch(function (message) {
+        loading.textContent = "載入失敗：" + message;
+      });
+    };
+    script.onerror = function () { loading.textContent = "載入失敗：找不到遊戲檔案"; };
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
